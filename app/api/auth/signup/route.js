@@ -1,28 +1,55 @@
-import connectDB from "@/app/lib/db"; 
-import User from "@/app/model/User"; 
-import bcrypt from "bcryptjs"; 
-import { NextResponse } from "next/server";
+import connectDB from "@/app/lib/db"; // DB connection helper
+import User from "@/app/model/User";  // User model
+import bcrypt from "bcryptjs"; // Library for hashing passwords
 
 export async function POST(req) {
-  const { name, email, password, role } = await req.json();
-
-  if (!name || !email || !password || !role) {
-    return NextResponse.json({ message: "All fields are required" }, { status: 400 });
-  }
-
   try {
-    await connectDB();
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return NextResponse.json({ message: "User already exists" }, { status: 400 });
+    // Parse JSON body
+    const { name, email, password, role } = await req.json();
+
+    // Validate input
+    if (!name || !email || !password || !role) {
+      return new Response(
+        JSON.stringify({ message: "All fields are required" }),
+        { status: 400 }
+      );
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ name, email, password: hashedPassword, role });
+    // Connect to the database
+    await connectDB();
+
+    // Check if the user already exists
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return new Response(
+        JSON.stringify({ message: "User already exists" }),
+        { status: 400 }
+      );
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10); // Use 10 salt rounds
+
+    // Create new user
+    const newUser = new User({
+      name,
+      email,
+      password: hashedPassword, // Save the hashed password
+      role,
+    });
+
     await newUser.save();
 
-    return NextResponse.json({ message: "User registered successfully" });
+    return new Response(
+      JSON.stringify({ message: "User registered successfully" }),
+      { status: 201 }
+    );
   } catch (error) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    // Handle server errors
+    console.error("Signup error:", error);
+    return new Response(
+      JSON.stringify({ message: "Server error. Please try again later." }),
+      { status: 500 }
+    );
   }
 }

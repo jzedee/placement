@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link"; // Use Next.js Link component for routing
 import { FaHome, FaUserAlt, FaBriefcase, FaCog, FaSignInAlt, FaUserPlus, FaSignOutAlt } from "react-icons/fa";
 import { useRouter } from "next/navigation"; // Import useRouter for redirection
+import Cookies from "js-cookie"; // Import js-cookie to manage cookies
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -15,9 +16,11 @@ const Navbar = () => {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   useEffect(() => {
-    // Check if the user is authenticated (from session/localStorage or API)
-    const user = JSON.parse(localStorage.getItem("user")); // Assuming user data is stored in localStorage
-    if (user) {
+    // Check if the user is authenticated (from cookies)
+    const userCookie = Cookies.get("auth_token"); // Get the cookie that stores user data
+
+    if (userCookie) {
+      const user = JSON.parse(userCookie); // Parse the user data from cookie
       setIsLoggedIn(true);
       setRole(user.role); // Set role from the user object
       setUsername(user.name); // Set the username from the user object
@@ -29,8 +32,8 @@ const Navbar = () => {
   }, []); // Empty dependency array to run this effect only once on component mount
 
   const handleLogout = () => {
-    // Clear user data
-    localStorage.removeItem("user");
+    // Clear user cookie
+    Cookies.remove("auth_token");
     setIsLoggedIn(false);
     setRole(null);
     setUsername(null);

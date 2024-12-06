@@ -3,18 +3,18 @@
 import { useState } from "react";
 import axios from "axios"; // Axios for API calls
 import AuthForm from "@/app/components/AuthForm";
-import { useRouter } from "next/navigation"; // Import useRouter for redirection
+import { useRouter } from "next/navigation"; // Import useRouter for programmatic navigation
 
 export default function LoginPage() {
   const [error, setError] = useState(null);
-  const router = useRouter(); // Hook for programmatic navigation
+  const router = useRouter(); // useRouter hook for redirection
 
   const handleLogin = async (data) => {
     try {
       // Send login data to the API
       const response = await axios.post("/api/auth/login", data);
 
-      // On successful login, handle redirection based on user role
+      // On successful login, redirect based on user role
       console.log("Login successful:", response.data);
       const { role } = response.data.session; // Assuming the role is sent in the session
 
